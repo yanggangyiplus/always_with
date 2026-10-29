@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Onest", "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  --font-display: "Gabarito", "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  --color-ink: #0d0c11;
+  --color-pale: #efeef4;
+  --color-brand-50: #f1edff;
+  --color-brand-300: #b9a3ff;
+  --color-brand-600: #6c3cff;
+  --color-brand-700: #6c3cff;
+  --color-brand-800: #5429e0;
+}
+
+body { @apply bg-white text-ink antialiased; }
+h1, h2 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.03em; word-break: keep-all; }
+
+/* 제목 끝의 둥근 점: 이 디자인의 서명 */
+.m-dot { display: inline-block; width: 0.19em; height: 0.19em; margin-left: 0.05em; border-radius: 999px; background: #6c3cff; vertical-align: baseline; }
+
+/* 연결 점: 살아 있다는 표시만 천천히 깜빡인다 */
+@keyframes presence { 50% { opacity: .35; } }
+.presence { animation: presence 2.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .presence { animation: none; } }

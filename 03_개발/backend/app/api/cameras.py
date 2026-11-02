@@ -72,7 +72,8 @@ def analyze(camera_id: int, frame: bytes = Body(media_type="image/jpeg"), user: 
     """브라우저가 보낸 프레임에서 관절을 찾아 그린 JPEG를 돌려주고, 낙상이면 이벤트를 만든다."""
     c = get_camera(db, user, camera_id)
     try:
-        return Response(pose.analyze(db, c, frame), media_type="image/jpeg")
+        jpg = pose.analyze(db, c, frame)
+        return Response(jpg, media_type="image/jpeg", headers={"X-Fall": "1"} if pose.fall_active(c.id) else {})
     except ValueError as e:
         raise HTTPException(400, str(e))
 

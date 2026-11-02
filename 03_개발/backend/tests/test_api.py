@@ -141,6 +141,7 @@ def test_analyze(client, guardian, parent):
     jpg = cv2.imencode(".jpg", np.zeros((120, 160, 3), np.uint8))[1].tobytes()
     r = client.post(url, content=jpg, headers={**guardian, "content-type": "image/jpeg"})
     assert r.status_code == 200 and r.headers["content-type"] == "image/jpeg"
+    assert "x-fall" not in r.headers  # 낙상이 아니면 표시하지 않는다
     assert client.post(url, content=b"junk", headers={**guardian, "content-type": "image/jpeg"}).status_code == 400
     assert client.post(url, content=jpg, headers={**parent, "content-type": "image/jpeg"}).status_code == 403
 
@@ -375,6 +376,8 @@ def test_push_send(client, db, guardian, monkeypatch):
     from app.core.config import settings
     from app.db.models import PushSubscription
     from app.services import push
+    for k in ("vapid_private_key", "vapid_public_key"):
+        monkeypatch.setattr(settings, k, "")  # backend/.env에 실제 키가 있어도 키 없는 상태로 시작한다
     assert client.get("/api/push/key", headers=guardian).json() == {"key": None}  # 키가 없으면 꺼짐
     _, c = child_camera(client, guardian)
     cam = db.get(Camera, c.json()["id"])

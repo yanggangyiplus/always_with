@@ -20,8 +20,14 @@ PRE_SEC, POST_SEC = 5.0, 5.0  # 낙상 앞뒤로 남기는 클립 길이
 _bufs: dict[int, deque] = {}  # 카메라별 최근 PRE_SEC 프레임(메모리에만 있고, 낙상일 때만 파일이 된다)
 _pending: dict[int, list] = {}  # 낙상 직후 POST_SEC 동안 모으는 프레임
 _said: dict[int, float] = {}
+_fall_until: dict[int, float] = {}  # 낙상으로 판정한 뒤 화면에 문구를 계속 띄울 시각
+FALL_SHOW_SEC = 8.0
 log = logging.getLogger("uvicorn.error")
 _rules: dict[int, FallRule] = {}  # shortcut: 프로세스 메모리, 서버를 여러 개 띄우면 카메라 상태가 갈라진다
+
+
+def fall_active(camera_id: int) -> bool:
+    return time.monotonic() < _fall_until.get(camera_id, 0)
 
 
 def _say(camera_id: int, t: float, text: str) -> None:
@@ -60,6 +66,7 @@ def analyze(db: Session, camera: Camera, jpeg: bytes) -> bytes:
         _say(camera.id, t, f"사람 {len(r.boxes)}명, 몸통 기울기 " + ("계산 못 함(어깨·엉덩이가 안 보임)" if angle is None else f"{angle:.0f}도")
              + f", 박스 가로/세로 {w / max(h, 1):.2f}")
         if rule.update(t, xy, conf, w / max(h, 1)):
+            _fall_until[camera.id] = t + FALL_SHOW_SEC  # 이벤트가 쿨다운으로 생략돼도 화면에는 알린다
             ev = create_event(db, camera, "fall", float(r.boxes.conf[i]))
             log.info("camera %s: 낙상 판정 → %s", camera.id, f"이벤트 {ev.id}" if ev else "만들지 않음(일시정지 또는 60초 안에 같은 이벤트)")
             if ev:

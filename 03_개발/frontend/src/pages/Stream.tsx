@@ -19,6 +19,7 @@ export default function Stream() {
   const [asking, setAsking] = useState(false) // 브라우저의 카메라 권한 창 응답을 기다리는 중
   const [error, setError] = useState('')
   const [pose, setPose] = useState<string | null>(null)
+  const [fall, setFall] = useState(false)
   const cam = cams.data?.find((c) => c.id === Number(id))
 
   const stop = () => {
@@ -27,6 +28,7 @@ export default function Stream() {
     media.current = null
     setOn(false)
     setPose(null)
+    setFall(false)
   }
   useEffect(() => stop, [])
 
@@ -40,8 +42,10 @@ export default function Stream() {
     while (media.current) {
       ctx.drawImage(video.current!, 0, 0, 640, 480)
       const jpeg = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, 'image/jpeg', 0.7))
-      const url = jpeg && (await analyzeFrame(Number(id), jpeg).catch(() => null))
+      const res = jpeg && (await analyzeFrame(Number(id), jpeg).catch(() => null))
+      const url = res ? res.url : null
       setPose((old) => { if (old) URL.revokeObjectURL(old); return url })
+      setFall(!!res?.fall)
       setError(url ? '' : '관절 분석 화면을 받지 못하고 있어요. 서버가 켜져 있는지 확인해 주세요.')
       await new Promise((ok) => setTimeout(ok, url ? 50 : 1000))
     }
@@ -74,6 +78,7 @@ export default function Stream() {
         <video ref={video} autoPlay muted playsInline className={pose ? 'sr-only' : '-scale-x-100 aspect-[4/3] w-full rounded-2xl bg-slate-900'} />
         {pose && <img src={pose} alt="관절이 표시된 카메라 화면" className="aspect-[4/3] w-full rounded-2xl bg-slate-900 object-cover" />}
         <ZoneBoxes zones={zones.data ?? []} />
+        {fall && <p role="alert" className="absolute inset-x-3 top-3 rounded-xl bg-red-600 px-4 py-3 text-center text-lg font-bold text-white shadow-lg">낙상이 감지되었습니다</p>}
       </div>
       <p aria-live="polite" className={`rounded-2xl p-4 font-semibold ${on ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
         {on ? '● 카메라가 켜져 있어요' : asking ? '카메라 권한을 기다리는 중이에요. 브라우저가 물으면 "허용"을 눌러 주세요.' : '카메라가 꺼져 있어요'} {cam && on && <CameraBadge status={cam.status} />}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useSession } from '../lib/auth'
 import { LocationProvider } from '../lib/location'
+import AlertBanner from './AlertBanner'
 import InstallButton from './InstallButton'
 import { canEnablePush, enablePush } from '../lib/push'
 
@@ -16,6 +17,7 @@ export default function Layout() {
   useEffect(() => { canEnablePush().then(setPush) }, [])
   return (
     <>
+      {me!.role === 'guardian' && <AlertBanner />}
       <header className="sticky top-0 z-20 border-b border-ink/10 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-3 px-4 py-2 md:flex-nowrap">
           <Link to="/" aria-label="Always with 홈으로" className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full bg-ink px-4 font-display text-lg font-extrabold tracking-tight text-white focus-visible:ring-4 focus-visible:ring-brand-300 focus-visible:outline-none">

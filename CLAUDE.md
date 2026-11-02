@@ -15,7 +15,7 @@ Always with: 언제 어디서나 가족이 서로를 돌보는 웹앱(추후 모
 
 - 백엔드: `cd 03_개발/backend && uvicorn app.main:app --reload` (8000)
 - 프론트: `cd 03_개발/frontend && npm run dev` (5173)
-- 테스트: `cd 03_개발/backend && python -m pytest -q` (23개 통과가 기준)
+- 테스트: `cd 03_개발/backend && python -m pytest -q` (24개 통과가 기준)
 - 낙상 규칙 평가: `cd 03_개발 && python ml/eval/eval_fall_rule.py`
 
 ## 규칙

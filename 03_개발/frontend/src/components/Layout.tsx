@@ -22,15 +22,18 @@ export default function Layout() {
             Always with
             <span aria-hidden className="presence h-2 w-2 rounded-full bg-brand-600" />
           </Link>
-          <div className="ml-auto flex gap-2"><InstallButton />
-          {push && <button onClick={() => enablePush().then(() => setPush(false), (e) => alert(e.message))} className="min-h-11 shrink-0 rounded-full border border-brand-600 px-3 text-sm font-semibold text-brand-800">알림 받기</button>}</div>
-          <button onClick={signOut} className={`min-h-11 shrink-0 px-2 text-sm text-slate-600 underline md:order-last`}>로그아웃</button>
+          <button onClick={signOut} className="ml-auto min-h-11 shrink-0 px-2 text-sm text-slate-600 underline md:order-last">로그아웃</button>
           <nav aria-label="주 메뉴" className="-mx-4 flex w-full gap-1 overflow-x-auto px-4 pt-1 md:mx-0 md:w-auto md:flex-1 md:pt-0">
             {tabs[me!.role].map(([to, label]) => <NavLink key={to} to={to} end={to === '/'} className={tab}>{label}</NavLink>)}
           </nav>
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-4 py-6"><LocationProvider><Outlet /></LocationProvider></main>
+      <footer className="mx-auto mt-8 flex max-w-3xl flex-wrap items-center gap-2 border-t border-ink/10 px-4 py-6">
+        <p className="mr-auto text-sm text-slate-600">Always with · 언제 어디서나 서로를 돌봐요</p>
+        <InstallButton />
+        {push && <button onClick={() => enablePush().then(() => setPush(false), (e) => alert(e.message))} className="min-h-11 shrink-0 rounded-full border border-brand-600 px-3 text-sm font-semibold text-brand-800">알림 받기</button>}
+      </footer>
     </>
   )
 }

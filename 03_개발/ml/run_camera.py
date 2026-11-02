@@ -47,7 +47,8 @@ try:
         r = model(frame, conf=args.conf, verbose=False)[0]
         if r.keypoints is not None and len(r.boxes):
             i = int(r.boxes.xywh[:, 2:].prod(dim=1).argmax())  # 다인이면 가장 큰 사람
-            if rule.update(t, r.keypoints.xy[i].tolist(), r.keypoints.conf[i].tolist()):
+            w, h = r.boxes.xywh[i][2:].tolist()
+            if rule.update(t, r.keypoints.xy[i].tolist(), r.keypoints.conf[i].tolist(), w / max(h, 1)):
                 ev = create_event(db, camera, "fall", float(r.boxes.conf[i]))
                 fall_until = t + 3
                 print("낙상 감지 → 이벤트", ev.id if ev else "(쿨다운/일시정지로 생략)", flush=True)

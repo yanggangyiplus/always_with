@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from '../lib/location'
+import FamilyMap from '../components/FamilyMap'
 import { btn, btn2, card, Empty, ErrorText } from '../components/ui'
 
 const ago = (iso: string) => {
@@ -27,6 +28,7 @@ export default function Where() {
         <button onClick={toggle} className={(data.me.sharing ? btn2 : btn) + ' w-full'}>{data.me.sharing ? '공유 끄기' : '내 위치 공유 켜기'}</button>
       </section>
 
+      <FamilyMap spots={data.members} />
       <section className="space-y-3" aria-label="가족 위치">
         {!data.members.length && <Empty>위치를 볼 가족이 아직 없어요.</Empty>}
         {data.members.map((m) => (

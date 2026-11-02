@@ -1,10 +1,13 @@
-"""규칙 기반 낙상 판정: 몸통(어깨-엉덩이)이 눕혀진 채 일정 시간 유지되고, 직전에 서 있었으면 낙상."""
+"""규칙 기반 낙상 판정: 몸통(어깨-엉덩이)이 눕혀진 채 일정 시간 유지되고, 직전에 서 있었으면 낙상.
+사람 박스가 가로로 넓으면(바닥에 기대어 비스듬히 누운 자세) 기울기 기준을 낮춰서 본다."""
 import math
 
 L_SH, R_SH, L_HIP, R_HIP = 5, 6, 11, 12
 MIN_CONF = 0.5
 LYING_DEG = 60     # 수직 대비 몸통 기울기가 이 이상이면 누움
 UPRIGHT_DEG = 30   # 이 미만이면 서 있음
+LEAN_DEG = 35      # 박스가 가로로 넓을 때는 이 기울기부터 누움으로 본다
+WIDE_RATIO = 1.2   # 사람 박스 가로/세로가 이 이상이면 가로로 넓음 (서 있으면 보통 0.5 안팎)
 LYING_SEC = 1.0
 UPRIGHT_WINDOW = 5.0
 
@@ -23,15 +26,15 @@ class FallRule:
         self.last_upright = None
         self.lying_since = None
 
-    def update(self, t, xy, conf):
-        """프레임 하나를 넣고 낙상이면 True. 한 번 True가 나오면 다시 일어설 때까지 False."""
+    def update(self, t, xy, conf, aspect=None):
+        """프레임 하나를 넣고 낙상이면 True. 한 번 True가 나오면 다시 일어설 때까지 False. aspect는 사람 박스 가로/세로(없으면 기울기만 본다)."""
         a = torso_angle(xy, conf)
         if a is None:
             return False
         if a < UPRIGHT_DEG:
             self.last_upright, self.lying_since = t, None
             return False
-        if a < LYING_DEG:
+        if a < LYING_DEG and not (aspect is not None and aspect >= WIDE_RATIO and a >= LEAN_DEG):
             return False
         if self.lying_since is None:
             self.lying_since = t

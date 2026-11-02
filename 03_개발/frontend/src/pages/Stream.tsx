@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { analyzeFrame, api } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
-import type { Camera } from '../lib/types'
+import type { Camera, Zone } from '../lib/types'
+import { ZoneBoxes } from '../components/ZoneBoxes'
 import { btn, btn2, CameraBadge, ErrorText } from '../components/ui'
 
 const HEARTBEAT_MS = 10_000 // 서버는 30초 무신호면 오프라인으로 본다
@@ -10,6 +11,7 @@ const HEARTBEAT_MS = 10_000 // 서버는 30초 무신호면 오프라인으로 �
 export default function Stream() {
   const { id } = useParams()
   const cams = useFetch<Camera[]>('/cameras')
+  const zones = useFetch<Zone[]>(`/cameras/${id}/zones`)
   const video = useRef<HTMLVideoElement>(null)
   const media = useRef<MediaStream>(null)
   const timer = useRef<number>(0)
@@ -68,14 +70,17 @@ export default function Stream() {
       <Link to="/cameras" className="inline-flex min-h-12 items-center font-semibold text-brand-800 underline">카메라 목록으로</Link>
       <h1 className="text-2xl font-bold">{cam?.name ?? '카메라'} 켜기</h1>
       {/* 분석 화면이 오면 영상은 숨기되, 프레임을 뜨는 원본으로 계속 켜 둔다 */}
-      <video ref={video} autoPlay muted playsInline className={pose ? 'sr-only' : '-scale-x-100 aspect-[4/3] w-full rounded-2xl bg-slate-900'} />
-      {pose && <img src={pose} alt="관절이 표시된 카메라 화면" className="aspect-[4/3] w-full rounded-2xl bg-slate-900 object-cover" />}
+      <div className="relative">
+        <video ref={video} autoPlay muted playsInline className={pose ? 'sr-only' : '-scale-x-100 aspect-[4/3] w-full rounded-2xl bg-slate-900'} />
+        {pose && <img src={pose} alt="관절이 표시된 카메라 화면" className="aspect-[4/3] w-full rounded-2xl bg-slate-900 object-cover" />}
+        <ZoneBoxes zones={zones.data ?? []} />
+      </div>
       <p aria-live="polite" className={`rounded-2xl p-4 font-semibold ${on ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
         {on ? '● 카메라가 켜져 있어요' : asking ? '카메라 권한을 기다리는 중이에요. 브라우저가 물으면 "허용"을 눌러 주세요.' : '카메라가 꺼져 있어요'} {cam && on && <CameraBadge status={cam.status} />}
       </p>
       <ErrorText>{error}</ErrorText>
       {on ? <button onClick={stop} className={btn2 + ' w-full'}>카메라 끄기</button> : <button onClick={start} disabled={asking} className={btn + ' w-full'}>{asking ? '켜는 중…' : '카메라 켜기'}</button>}
-      <p className="text-sm text-slate-600">화면에는 사람의 관절이 점과 선으로 표시돼요. 영상은 분석하는 동안에만 서버로 보내고 저장하지 않아요. 이 창을 닫거나 다른 화면으로 가면 카메라가 꺼져요.</p>
+      <p className="text-sm text-slate-600">화면에는 사람의 관절이 점과 선으로 표시돼요. 영상은 분석하는 동안에만 서버로 보내요. 평소에는 저장하지 않고, 낙상이 의심될 때만 앞뒤 약 10초를 클립으로 저장해요. 이 창을 닫거나 다른 화면으로 가면 카메라가 꺼져요.</p>
     </div>
   )
 }

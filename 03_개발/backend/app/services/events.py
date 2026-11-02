@@ -3,7 +3,9 @@ from datetime import timedelta
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.notifications import LABEL
 from app.db.models import Camera, Event, Notification, now
+from app.services import push
 
 COOLDOWN = timedelta(seconds=60)
 
@@ -23,4 +25,6 @@ def create_event(db: Session, camera: Camera, type: str, score: float | None = N
     db.flush()
     db.add(Notification(user_id=camera.recipient.guardian_id, event_id=ev.id, type=type))
     db.commit()
+    push.notify(db, camera.recipient.guardian_id, f"{LABEL[type]} · {camera.recipient.display_name}",
+                f"{camera.name} · 확인해 주세요", f"/events/{ev.id}")
     return ev

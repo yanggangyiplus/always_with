@@ -22,7 +22,7 @@ export default function Connect({ onLinked }: { onLinked: () => void }) {
           <input name="code" required inputMode="numeric" pattern="\d{6}" maxLength={6} autoComplete="one-time-code" aria-label="6자리 코드" className={big + ' border border-slate-300 bg-white text-center font-mono tracking-[0.4em]'} />
           <div className="rounded-2xl bg-slate-100 p-4 text-lg">
             <p className="font-semibold">이렇게 사용돼요</p>
-            <p>평소에는 관절 선만 분석하고 영상은 저장하지 않아요. 영상은 연결된 보호자만 볼 수 있어요.</p>
+            <p>평소에는 관절 선만 분석하고 영상은 저장하지 않아요. 낙상이 의심될 때만 앞뒤 약 10초 클립을 저장하고, 연결된 보호자만 볼 수 있어요.</p>
           </div>
           <label className="flex min-h-14 items-start gap-3"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-7 w-7 shrink-0" />위 내용을 읽었고 동의해요</label>
           <ErrorText>{error}</ErrorText>

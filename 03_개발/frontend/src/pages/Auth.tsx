@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { useFetch } from '../lib/useFetch'
 import { useSession } from '../lib/auth'
 import type { Me } from '../lib/types'
+import InstallButton from '../components/InstallButton'
 import { btn, ErrorText, input } from '../components/ui'
 
 const SOCIAL = [
@@ -75,6 +76,7 @@ export default function Auth() {
           <button key={p} disabled className="flex min-h-12 w-full items-center justify-center rounded-full bg-slate-200 px-5 font-semibold text-slate-600">{name}로 {mode === 'login' ? '로그인' : '가입하기'} (준비 중)</button>
         ))}
       </div>
+      <InstallButton className="mt-4 w-full" />
       <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }} className="mt-4 min-h-12 w-full text-slate-700 underline">
         {mode === 'login' ? '처음이세요? 가입하기' : '이미 계정이 있어요'}
       </button>

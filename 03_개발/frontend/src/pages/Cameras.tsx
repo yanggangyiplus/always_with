@@ -34,6 +34,7 @@ export default function Cameras() {
             <div className="flex flex-wrap items-center gap-2"><h2 className="text-lg font-bold">{c.name}</h2><CameraBadge status={c.status} /></div>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-slate-600">{c.recipient_name} <TypeBadge type={c.recipient_type} beta={c.beta} />{c.location_label && <span>· {c.location_label}</span>}</p>
             <Link to={`/cameras/${c.id}/stream`} className={btn + ' mt-3 mr-2'}>이 기기의 카메라 켜기</Link>
+            {c.recipient_type === 'child' && <Link to={`/cameras/${c.id}/zones`} className={btn2 + ' mt-3 mr-2'}>구역 설정</Link>}
             <button onClick={() => toggle(c)} className={btn2 + ' mt-3'}>{c.status === 'paused' ? '모니터링 다시 시작' : '모니터링 일시정지'}</button>
           </article>
         ))}

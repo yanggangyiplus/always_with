@@ -75,7 +75,7 @@ export default function AddRecipient() {
       {type === 'child' ? (
         <>
           <p className="rounded-2xl bg-amber-100 p-4 text-amber-900">아이 감지는 베타예요. 성인 데이터로 학습한 모델을 쓰기 때문에 놀이 동작을 낙상으로 잘못 알릴 수 있어요.</p>
-          <label className="flex min-h-12 items-start gap-3"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-6 w-6 shrink-0" /><span>법정대리인으로서 아이의 영상 분석에 동의해요. 영상은 저장되지 않아요.</span></label>
+          <label className="flex min-h-12 items-start gap-3"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-6 w-6 shrink-0" /><span>법정대리인으로서 아이의 영상 분석에 동의해요. 평소 영상은 저장되지 않고, 낙상이 의심될 때만 앞뒤 약 10초 클립이 저장돼요.</span></label>
         </>
       ) : <p className="text-slate-600">저장하면 부모님께 알려 줄 초대 코드가 나와요.</p>}
       <ErrorText>{error}</ErrorText>

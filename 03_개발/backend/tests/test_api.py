@@ -350,3 +350,73 @@ def test_chat_reply_to_post(client, guardian, parent):
     # 글이 지워져도 메시지는 남고 '삭제된 글'로 보인다
     client.delete(f"/api/posts/{open_post['id']}", headers=parent)
     assert by(guardian)["좋아 보여요"] == {"gone": True}
+
+
+def test_clip_encode_and_serve(client, db, guardian, tmp_path):
+    import cv2, numpy as np, shutil
+    from app.services import clips
+    _, c = child_camera(client, guardian)
+    ev = create_event(db, db.get(Camera, c.json()["id"]), "fall", 0.9)
+    frames = [(i * 0.1, cv2.imencode(".jpg", np.full((480, 640, 3), i * 20, np.uint8))[1].tobytes()) for i in range(10)]
+    assert not clips.encode(frames[:1], tmp_path / "x.mp4")  # 프레임이 모자라면 만들지 않는다
+    if not shutil.which("ffmpeg"):
+        return
+    path = tmp_path / "e.mp4"
+    assert clips.encode(frames, path)
+    ev.clip_path, ev.clip_status = str(path), "ready"
+    db.commit()
+    r = client.get(f"/api/events/{ev.id}/clip", headers=guardian)
+    assert r.status_code == 200 and r.headers["content-type"] == "video/mp4" and r.content[4:8] == b"ftyp"
+
+
+def test_push_send(client, db, guardian, monkeypatch):
+    from types import SimpleNamespace
+    from pywebpush import WebPushException
+    from app.core.config import settings
+    from app.db.models import PushSubscription
+    from app.services import push
+    assert client.get("/api/push/key", headers=guardian).json() == {"key": None}  # 키가 없으면 꺼짐
+    _, c = child_camera(client, guardian)
+    cam = db.get(Camera, c.json()["id"])
+    for n in ("ok", "gone"):
+        client.post("/api/push/subscribe", json={"endpoint": f"https://push/{n}", "keys": {"p256dh": "a", "auth": "b"}}, headers=guardian)
+    sent = []
+
+    def fake(subscription_info, data, **kw):
+        if subscription_info["endpoint"].endswith("gone"):
+            raise WebPushException("gone", response=SimpleNamespace(status_code=410))
+        sent.append((subscription_info["endpoint"], data, kw["vapid_claims"]))
+
+    monkeypatch.setattr(push, "webpush", fake)
+    monkeypatch.setattr(push, "SessionLocal", lambda: db)
+    monkeypatch.setattr(push.threading, "Thread", lambda target, args, daemon: SimpleNamespace(start=lambda: target(*args)))
+    create_event(db, cam, "fall", 0.9)
+    assert not sent  # 키 없이는 보내지 않는다
+    monkeypatch.setattr(settings, "vapid_private_key", "k")
+    monkeypatch.setattr(settings, "vapid_public_key", "p")
+    create_event(db, cam, "bed_exit")
+    assert [s[0] for s in sent] == ["https://push/ok"] and "취침 구역 이탈 · 하늘" in sent[0][1] and "/events/" in sent[0][1]
+    assert [s.endpoint for s in db.query(PushSubscription)] == ["https://push/ok"]  # 만료된 구독은 지운다
+    assert client.get("/api/push/key", headers=guardian).json() == {"key": "p"}
+
+
+def test_oauth_profile_parsing(monkeypatch):
+    """제공자 응답 모양(토큰 교환 후 사용자 정보)을 가짜 HTTP 서버로 확인한다."""
+    import httpx
+    from app.api import oauth
+    me = {
+        "google": {"sub": "g1", "email": "a@x.com", "email_verified": True},
+        "kakao": {"id": 7, "kakao_account": {"email": "k@x.com", "is_email_verified": True, "is_email_valid": True}},
+        "naver": {"resultcode": "00", "response": {"id": "n1", "email": "n@x.com"}},
+    }
+    real = httpx.Client
+    for p, body in me.items():
+        def handler(req, body=body):
+            if req.method == "POST":
+                assert b"code=c" in req.content and b"client_secret=" in req.content
+                return httpx.Response(200, json={"access_token": "t"})
+            assert req.headers["authorization"] == "Bearer t"
+            return httpx.Response(200, json=body)
+        monkeypatch.setattr(oauth.httpx, "Client", lambda timeout, h=handler: real(transport=httpx.MockTransport(h)))
+        prof = oauth.fetch_profile(p, "c", "s")
+        assert prof["email"] == {"google": "a@x.com", "kakao": "k@x.com", "naver": "n@x.com"}[p] and prof["verified"] is True

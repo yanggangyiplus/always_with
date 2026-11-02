@@ -17,6 +17,7 @@ import OAuthDone from './pages/OAuthDone'
 import Landing from './pages/Landing'
 import Home from './pages/Home'
 import Stream from './pages/Stream'
+import ZoneSetup from './pages/ZoneSetup'
 import Report from './pages/Report'
 import Timeline from './pages/Timeline'
 
@@ -66,6 +67,7 @@ function Routing() {
         <Route path="events/:id" element={<EventDetail />} />
         <Route path="cameras" element={<Cameras />} />
         <Route path="cameras/:id/stream" element={<Stream />} />
+        <Route path="cameras/:id/zones" element={<ZoneSetup />} />
         <Route path="recipients/new" element={<AddRecipient />} />
         <Route path="recipients/:id/connect" element={<ConnectRecipient />} />
         <Route path="report" element={<Report />} />

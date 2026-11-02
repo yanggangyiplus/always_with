@@ -12,7 +12,11 @@ export default function EventDetail() {
   const [asking, setAsking] = useState<'acknowledged' | 'false_alarm' | null>(null)
   const [fail, setFail] = useState('')
 
-  useEffect(() => { clipUrl(Number(id)).then(setClip) }, [id])
+  // 클립은 낙상 5초 뒤에 만들어져서, 저장 중이면 3초마다 다시 확인한다
+  useEffect(() => {
+    if (e?.clip_status === 'saving') { const t = setTimeout(reload, 3000); return () => clearTimeout(t) }
+    if (e?.clip_status === 'ready') clipUrl(Number(id)).then(setClip)
+  }, [e, id, reload])
 
   async function change(status: 'acknowledged' | 'false_alarm') {
     try { await api(`/events/${id}`, { method: 'PATCH', json: { status } }); setAsking(null); reload() } catch (err) { setFail((err as Error).message) }
@@ -30,7 +34,11 @@ export default function EventDetail() {
       </section>
       <div className="flex flex-wrap items-center gap-2"><span className="font-bold">{e.recipient_name}</span><TypeBadge type={e.recipient_type} beta={e.beta} /><StatusBadge status={e.status} />{e.score != null && <span className="text-slate-600">신뢰도 {e.score.toFixed(2)}</span>}</div>
       {e.beta && <p className="rounded-2xl bg-amber-100 p-4 text-amber-900">아이 대상 감지는 베타예요. 놀이 동작을 잘못 알릴 수 있으니 직접 확인해 주세요.</p>}
-      {clip ? <video src={clip} controls className="w-full rounded-2xl bg-black" /> : clip === null && <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-slate-600">클립을 불러올 수 없어요.</p>}
+      {clip ? <video src={clip} controls className="w-full rounded-2xl bg-black" /> : (
+        <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-slate-600">
+          {e.clip_status === 'saving' ? '클립을 저장하고 있어요. 낙상 5초 뒤까지 담아요.' : e.clip_status === 'failed' || clip === null ? '클립을 저장하지 못했어요.' : e.clip_status === 'ready' ? '클립을 불러오는 중…' : '이 알림에는 저장된 클립이 없어요.'}
+        </p>
+      )}
 
       {e.status === 'new' ? (
         asking ? (

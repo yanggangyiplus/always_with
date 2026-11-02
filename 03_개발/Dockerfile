@@ -19,4 +19,7 @@ RUN python -c "from ultralytics import YOLO; YOLO('yolo26n-pose.pt')"
 WORKDIR /app/backend
 COPY backend/app ./app
 COPY --from=web /web/dist /app/frontend/dist
+# Hugging Face Spaces는 root가 아닌 사용자(uid 1000)로 실행하므로 쓸 곳을 열어 둔다
+RUN chmod -R a+rwX /app
+ENV PORT=7860 HOME=/tmp YOLO_CONFIG_DIR=/tmp/Ultralytics
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

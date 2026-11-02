@@ -112,13 +112,29 @@ Web Push는 `localhost` 또는 HTTPS에서만 켜져요. 키는 저장소에 올
 
 `Dockerfile`과 `render.yaml`을 저장소 루트(이 폴더)에 두었어요. 백엔드가 빌드한 화면까지 함께 내보내서 서비스 하나로 돌아가요.
 
-1. 이 폴더가 저장소 루트가 되도록 Render의 Root Directory를 `03_개발`로 지정해요.
-2. Render 대시보드에서 「New」의 「Blueprint」로 저장소를 연결하면 `render.yaml`을 읽어요.
+1. Render 대시보드에서 「New」의 「Blueprint」로 저장소를 연결하고 Blueprint Path에 `03_개발/render.yaml`을 적어요. 설정 안의 `rootDir`이 `03_개발`에서 Dockerfile을 찾게 해 줘요.
+2. 저장소를 직접 `Web Service`로 연결할 때는 Root Directory를 `03_개발`로 지정해요.
 3. 비밀 값(`PUBLIC_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VAPID_*`)은 대시보드에서 직접 넣어요.
 4. `PUBLIC_URL`에 배포된 주소(`https://...onrender.com`)를 넣고, 구글 콘솔의 리디렉션 URI에 `{PUBLIC_URL}/api/auth/oauth/google/callback`을 추가해요.
 5. DB와 낙상 클립은 `/data` 영구 디스크에 저장돼요. 영구 디스크는 유료 요금제에서만 붙어요.
 
 이미지에서 모델 파일(`yolo26n-pose.pt`)은 빌드할 때 내려받아요. 이 설정으로 실제 빌드와 배포는 아직 해보지 못했어요.
+
+## Hugging Face Spaces에 배포
+
+카드 없이 올릴 수 있어요. 같은 `Dockerfile`을 쓰고, 포트는 7860이에요.
+
+1. [Hugging Face](https://huggingface.co/new-space)에서 Space를 만들어요. SDK는 「Docker」, 공개 범위는 원하는 대로 골라요.
+2. Space의 「Settings」에서 「Variables and secrets」에 아래 값을 넣어요.
+   - `JWT_SECRET`: 길고 아무렇게나 만든 문자열(Secret)
+   - `PUBLIC_URL`: `https://{계정}-{space이름}.hf.space`
+   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`: 구글 로그인을 쓸 때(Secret)
+   - `VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`: 푸시를 쓸 때(Secret)
+3. 이 폴더에서 `./deploy_hf.sh 계정/space이름`을 실행해요. 비밀번호를 물으면 write 권한 토큰을 넣어요.
+4. Space 화면에서 빌드가 끝나길 기다려요. 처음은 모델과 torch를 받느라 오래 걸려요.
+5. 구글 콘솔의 리디렉션 URI에 `{PUBLIC_URL}/api/auth/oauth/google/callback`을 추가해요.
+
+무료 Space는 디스크가 영구가 아니어서 재시작하거나 다시 배포하면 DB와 클립이 지워져요. 접속이 없으면 잠들어요. 웹캠은 `hf.space` 주소를 직접 열어야 쓸 수 있어요(Hugging Face 화면에 끼워 넣은 형태에서는 권한이 막힐 수 있어요). 빌드와 배포는 아직 해보지 못했어요.
 
 ## 주요 기능
 

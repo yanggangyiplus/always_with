@@ -13,7 +13,7 @@ Always with(가족 돌봄 웹앱)를 Claude Code 위에서 작업했고, 아래 
 | hgy-developer | 0.3.0 | `yanggangyiplus/hgy-marketplace` | 코드 리뷰, 디버그 스킬과 MCP 묶음 | 사용 (03_개발) |
 | hgy-writer | 0.2.0 | `yanggangyiplus/hgy-marketplace` | 문서 작성 원칙과 점검 | 사용 (README와 문서) |
 | context7 | - | `anthropic-plugin-directory` | 라이브러리 최신 문서 조회 | 설치만 |
-| document-skills | - | `anthropics/skills` | pptx, pdf 생성 | 설치만 (발표 자료 제작에 쓸 예정) |
+| document-skills | - | `anthropics/skills` | pptx, pdf 생성 | 사용 (발표 자료 PPTX 제작) |
 
 ## MCP 서버
 
@@ -22,6 +22,7 @@ Always with(가족 돌봄 웹앱)를 Claude Code 위에서 작업했고, 아래 
 | Chrome DevTools | 화면 확인, 콘솔과 네트워크 점검, 작은 화면 확인 | 03_개발, 02_디자인 |
 | Serena | 코드 구조 탐색과 심볼 단위 수정 | 03_개발 |
 | GitHub | 저장소 확인 | 설치만 |
+| Notion | 데일리 스크럼 페이지 작성 | 일정 정리 |
 
 ## 프로젝트 스킬 (`.claude/skills/`)
 
